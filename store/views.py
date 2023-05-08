@@ -14,3 +14,4 @@ def all_product(request):
 
 def product_detail(request, slug):
     product = get_object_or_404(Product, slug=slug, is_active=True)
+    return render(request, 'store/products/detail.html', {'product': product})
