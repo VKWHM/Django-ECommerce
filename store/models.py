@@ -20,6 +20,11 @@ class Category(models.Model):
         return self.name
 
 
+class ProductManager(models.Manager):
+    def get_queryset(self):
+        return super(ProductManager, self).get_queryset().filter(is_active=True)
+
+
 class Product(models.Model):
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE, related_name="product")
@@ -35,6 +40,8 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
+    products = ProductManager()
+    objects = models.Manager()
 
     class Meta:
         verbose_name_plural = "Products"
