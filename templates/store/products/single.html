@@ -102,12 +102,10 @@
                 body: `qty=${document.getElementById('qty').value}`
             })
             .then(async (response) => {
-                console.log(response)
                 if (response.status === 200) {
                     showAlert('.alert-success');
                     result = await response.json();
                     document.querySelector('#basketItemCount').innerText = result.basket_item_count;
-                    document.querySelector('.alert-success').classList.remove('d-none'); 
                 } else {
                     throw new Error(`Unexpected Status Code: ${response.status}`);
                 }

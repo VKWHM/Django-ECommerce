@@ -1,8 +1,10 @@
 from store.models import Product
+from decimal import Decimal
 
 
 class Basket:
     def __init__(self, request):
+
         self.session = request.session
         if not self.session.get('sessionKey', False):
             self.session['sessionKey'] = {}
@@ -13,9 +15,15 @@ class Basket:
 
     def __len__(self):
         count = 0
-        for k, v in self._basket.items():
-            count += int(v['qty'])
+        for item in self._basket.values():
+            count += int(item['qty'])
         return count
+
+    def __iter__(self):
+        for product in Product.products.filter(id__in=self._basket.keys()):
+            item = self._basket[str(product.id)]
+            item['product'] = product
+            yield item
 
     def add(self, item_id, count=1):
         if not self[item_id]:
@@ -25,6 +33,16 @@ class Basket:
         else:
             self[item_id]['qty'] += count
         self.save()
+
+    def delete(self, item_id):
+        if item_id in self._basket.keys():
+            del self._basket[item_id]
+            self.save()
+            return True
+        return False
+
+    def get_total_price(self):
+        return sum(Decimal(item['price']) * int(item['qty']) for item in self._basket.values())
 
     def save(self):
         self.session.modified = True

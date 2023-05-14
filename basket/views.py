@@ -1,20 +1,42 @@
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, Http404
 from django.views import View
 from django.shortcuts import render
 from .basket import Basket
+import json
 
 
 def basket_summary(request):
-    return render(request, 'store/basket/summary.html')
+    basket = Basket(request)
+    return render(request, 'store/basket/summary.html', {'basket': basket, 'total_price': basket.get_total_price()})
 
 
 class BasketAPI(View):
     def get(self, request, id):
         basket = Basket(request)
-        return JsonResponse(basket[id], status=200 if basket[id] else 404)
+        if basket[id]:
+            return JsonResponse(basket[id])
+        return Http404()
 
     def post(self, request, id):
         qty = max(1, int(request.POST.get('qty', 1)))
         basket = Basket(request)
         basket.add(id, qty)
         return JsonResponse({'basket_item_count': len(basket)})
+
+    def delete(self, request, id):
+        basket = Basket(request)
+        if basket.delete(id):
+            return JsonResponse({'basket_item_count': len(basket), 'item_id': id, 'total_price': basket.get_total_price()})
+        return Http404()
+
+    def patch(self, request, id):
+        basket = Basket(request)
+        if basket[id]:
+            qty = max(0, int(json.loads(request.body).get('qty', False)))
+            if qty:
+                basket[id]['qty'] = qty
+                return JsonResponse({'basket_item_count': len(basket), 'item_id': id, 'total_price': basket.get_total_price()})
+            else:
+                return HttpResponse(status=400)
+        else:
+            return Http404()
