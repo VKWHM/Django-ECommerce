@@ -1,131 +1,174 @@
 {% extends "../base.html" %}
 {% block title %}Basket Summary{% endblock %}
 {% block content %}
-    <main class="pt-5">
-        <div class="container">
-            <h1 class="h5">Shopping basket</h1>
-            {% for item in basket %}
-                {% with product=item.product %}
-                    <div data-index="{{ product.id }}" class="row mb-4 border product-item">
-                        <div class="col-md-3 col-lg-2 order-md-first bg-light">
-                            <img class="img-fluid mx-auto d-block"
-                                 width="100%"
-                                 alt="Responsive image"
-                                 src="{{ product.image.url }}">
-                        </div>
-                        <div class="col-md-9 col-lg-10 ps-md-3 ps-lg-10">
-                            <a href="{{ product.get_absolute_url }}"
-                               class="text-decoration-none text-reset">
-                                <h1 class="h5 pt-2">{{ product.title }}</h1>
-                            </a>
-                            <div class="border">
-                                <div class="col border-bottom">
-                                    <div class="row p-3">
-                                        <div class="col-6">Hardback Book</div>
-                                        <div class="col-6 text-end">
-                                            <span class="h6 fw-bold">£{{ product.price }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="row p-3">
-                                        <div class="col-12">
-                                            <div class="input-group mb-3 inputs">
-                                                <span class="input-group-text" id="basic-addon1">Quantity</span>
-                                                <input id="qty"
-                                                       type="number"
-                                                       class="form-control"
-                                                       style="min-width: 70px"
-                                                       value='{{ item.qty }}'
-                                                       min='1'>
-                                                <button type="button"
-                                                        data-index="{% url 'basket:BasketAPI' product.id %}"
-                                                        class="btn btn-outline-secondary btn-sm update-button">
-                                                    Update
-                                                </button>
-                                                <button type="button"
-                                                        data-index="{% url 'basket:BasketAPI' product.id %}"
-                                                        class="btn btn-outline-secondary btn-sm delete-button">
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endwith %}
-            {% endfor %}
-            <div class="col-12 text-end mb-3">
-                <div class="h6 fw-bold">
-                    Sub Total: £
-                    <div id="subtotal" class="d-inline-flex">{{ total_price }}</div>
-                </div>
+<main class="pt-5">
+  <div class="container" style="max-width: 1000px">
+    <div class="col-12">
+      <h1 class="h2">Your Basket</h1>
+    </div>
+    <div class="col-12">
+      <p>Manage your <b>items</b> in your basket</p>
+    </div>
+    <hr />
+  </div>
+  <div class="container" style="max-width: 1000px">
+
+    <div class="row g-3">
+      <div class="col-12 bg-light p-3 d-flex justify-content-between">
+        <div class="d-flex d-flex-inline">
+          <div class="pe-3">Order</div>
+          <div class="dropdown">
+          <a class="text-reset text-decoration-none dropdown-toggle" href="#" role="link" id="dropdownLink" data-bs-toggle="dropdown" aria-expanded="false">
+          Shipping options
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+          </svg>
+          </a>
+
+          <ul class="dropdown-menu" aria-labelledby="dropdownLink">
+            <li class="item small">Next day delivery</li>
+            <li class="item small">Premimum delivery</li>
+          </ul>
+          </div>
+        </div>
+        <div class="text-end">
+
+          <div class="">Sub Total: <span class="fw-bold">£</span><div id="subtotal" class="d-inline-flex fw-bold">{{basket.get_subtotal_price}}</div></div>
+          <div id="">Shipping <span class="small">(Next day delivery)</span>: <span class="fw-bold">£11.50</span></div>
+          <div class="pt-2">Total to pay: <span class="fw-bold h5">£</span><span id="total" class="fw-bold h5">{{total_price}}</span></div>
+
+        </div>
+      </div>
+      <div class="col-md-5 col-lg-4 order-md-last ps-4 order-3">
+        <div class="bg-light border rounded p-3 ">
+            <div class="d-grid gap-3 ">
+              <a role="button" href="" class="btn btn-success fw-bold" type="button">Checkout</a>
+              <button class="btn btn-warning" type="button">Save for later</button>
             </div>
         </div>
-    </main>
-    <script>
-        document.querySelectorAll('div.inputs').forEach((div) => {
-            div.querySelector('.delete-button').onclick = (event) => {
-                if (event.target.hasAttribute('disabled')) return null;
-                event.target.setAttribute('disabled', null);
-                document.body.style.cursor = 'await';
-                fetch(event.target.getAttribute('data-index'), {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',
-                    },
-                })
-                .then(async (response) => {
-                    if (response.status === 200) {
-                        result = await response.json();
-                        document.querySelector('#basketItemCount').innerText = result.basket_item_count;
-                        document.querySelector('#subtotal').innerText = result.total_price
-                        document.querySelector(`div[data-index='${result.item_id}']`).remove()
-                    } else {
-                        throw new Error(`Unexpected Status Code: ${response.status}`);
-                    }
-                        
-                })
-                .catch((err) => {
-                    console.log(err);
-                })
-                .finally(() => {
-                    event.target.removeAttribute('disabled');
-                    document.body.style.cursor = undefined;
-                });
-            }
-            div.querySelector('.update-button').onclick = (event) => {
-                if (event.target.hasAttribute('disabled')) return null;
-                event.target.setAttribute('disabled', null);
-                document.body.style.cursor = 'await';
-                fetch(event.target.getAttribute('data-index'), {
-                    method: 'PATCH',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({qty:event.target.parentNode.querySelector('#qty').value}),
-                })
-                .then(async (response) => {
-                    if (response.status === 200) {
-                        result = await response.json();
-                        document.querySelector('#basketItemCount').innerText = result.basket_item_count;
-                        document.querySelector('#subtotal').innerText = result.total_price
-                    } else {
-                        throw new Error(`Unexpected Status Code: ${response.status}`);
-                    }
-                        
-                })
-                .catch((err) => {
-                    console.log(err);
-                })
-                .finally(() => {
-                    event.target.removeAttribute('disabled');
-                    document.body.style.cursor = undefined;
-                });
-            }
-        })    
-    </script>
+      </div>
+      <div class="col-md-7 col-lg-8 ps-3">
+
+          {% for item in basket %}
+          {% with product=item.product %}
+              <div data-index="{{ product.id }}" class="row mb-4 border rounded py-3 product-item">
+                  <div class="col-md-3 col-lg-2 order-md-first bg-light">
+                      <img class="img-fluid mx-auto d-block"
+                      width="100%"
+                      alt="Responsive image"
+                      src="{{ product.image.url }}">
+                  </div>
+                  <div class="col-md-9 col-lg-10 ps-md-3 ps-lg-10">
+                      <a href="{{ product.get_absolute_url }}"
+                      class="text-decoration-none text-reset">
+                      <h1 class="h5 pt-2">{{ product.title }}</h1>
+                  </a>
+                      <div class="border">
+                          <div class="col border-bottom">
+                              <div class="row p-3">
+                                  <div class="col-6">Hardback Book</div>
+                                  <div class="col-6 text-end">
+                                      <span class="h6 fw-bold">£{{ product.price }}</span>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="col">
+                              <div class="row p-3">
+                                  <div class="col-12">
+                                      <div class="input-group mb-3 inputs">
+                                          <span class="input-group-text" id="basic-addon1">Quantity</span>
+                                          <input id="qty"
+                                              type="number"
+                                              class="form-control"
+                                              style="min-width: 70px"
+                                              value='{{ item.qty }}'
+                                              min='1'>
+                                          <button type="button"
+                                              data-index="{% url 'basket:BasketAPI' product.id %}"
+                                              class="btn btn-outline-secondary btn-sm update-button">
+                                              Update
+                                          </button>
+                                          <button type="button"
+                                              data-index="{% url 'basket:BasketAPI' product.id %}"
+                                              class="btn btn-outline-secondary btn-sm delete-button">
+                                              Delete
+                                          </button>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          {% endwith %}
+          {% endfor %}
+            </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+    document.querySelectorAll('div.inputs').forEach((div) => {
+        div.querySelector('.delete-button').onclick = (event) => {
+            if (event.target.hasAttribute('disabled')) return null;
+            event.target.setAttribute('disabled', null);
+            document.body.style.cursor = 'await';
+            fetch(event.target.getAttribute('data-index'), {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+            })
+            .then(async (response) => {
+                if (response.status === 200) {
+                    result = await response.json();
+                    document.querySelector('#basketItemCount').innerText = result.basket_item_count;
+                    document.querySelector('#total').innerText = result.total_price
+                    document.querySelector(`div[data-index='${result.item_id}']`).remove()
+                } else {
+                    throw new Error(`Unexpected Status Code: ${response.status}`);
+                }
+
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+            .finally(() => {
+                event.target.removeAttribute('disabled');
+                document.body.style.cursor = undefined;
+            });
+        }
+        div.querySelector('.update-button').onclick = (event) => {
+            if (event.target.hasAttribute('disabled')) return null;
+            event.target.setAttribute('disabled', null);
+            document.body.style.cursor = 'await';
+            fetch(event.target.getAttribute('data-index'), {
+                method: 'PATCH',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({qty:event.target.parentNode.querySelector('#qty').value}),
+            })
+            .then(async (response) => {
+                if (response.status === 200) {
+                    result = await response.json();
+                    document.querySelector('#basketItemCount').innerText = result.basket_item_count;
+                    document.querySelector('#total').innerText = result.total_price
+                } else {
+                    throw new Error(`Unexpected Status Code: ${response.status}`);
+                }
+
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+            .finally(() => {
+                event.target.removeAttribute('disabled');
+                document.body.style.cursor = undefined;
+            });
+        }
+    })
+</script>
 {% endblock %}
