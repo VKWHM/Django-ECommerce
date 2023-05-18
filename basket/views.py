@@ -1,8 +1,10 @@
-from django.http import JsonResponse
-from django.views import View
-from django.shortcuts import render
-from .basket import Basket
 import json
+
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views import View
+
+from .basket import Basket
 
 
 def basket_summary(request):
