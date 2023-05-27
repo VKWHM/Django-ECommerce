@@ -140,3 +140,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'account.UserBase'
 LOGIN_REDIRECT_URL = reverse_lazy('account:login')
 LOGIN_URL = reverse_lazy("account:dashboard")
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

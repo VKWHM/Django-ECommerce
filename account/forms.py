@@ -1,5 +1,7 @@
 from django import forms
+
 from .models import UserBase
+
 
 class RegistrationForm(forms.ModelForm):
     username = forms.CharField(label="Enter User Name", min_length=4, max_length=30, help_text="Required")
