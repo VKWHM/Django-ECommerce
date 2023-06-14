@@ -1,6 +1,27 @@
 from django import forms
+from django.contrib.auth.forms import AuthenticationForm
 
 from .models import UserBase
+
+
+class UserLoginForm(AuthenticationForm):
+
+    username = forms.CharField(widget=forms.TextInput(
+        attrs={
+        'class': 'form-control mb-3',
+        'placeholder': 'Username',
+        'id': 'login-username',
+        'autofocus': "true"
+        }))
+    password = forms.CharField(widget=forms.PasswordInput(
+        attrs={
+            'class': 'form-control',
+            'placeholder': 'Password',
+            'id': 'login-pwd',
+            'autocomplete': 'password',
+        }
+    ))
+
 
 
 class RegistrationForm(forms.ModelForm):

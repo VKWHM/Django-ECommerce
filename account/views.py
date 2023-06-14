@@ -15,7 +15,7 @@ from .models import UserBase
 from .token import AccountActivationTokenGenerator
 
 
-@login_required(login_url=reverse_lazy('account:login_page'))
+@login_required()
 def account_dashboard(request, *args, **kwargs):
     return render(request, 'account/dashboard.html')
 
@@ -24,7 +24,7 @@ def account_activate(request, uidb64, token):
         uid = urlsafe_base64_decode(force_str(uidb64))
         user = UserBase.objects.get(pk=uid)
     except Exception as e:
-        print(e)
+        pass
     else:
         if user is not None and AccountActivationTokenGenerator.check_token(user, token):
             user.is_active = True
@@ -32,11 +32,6 @@ def account_activate(request, uidb64, token):
             login(request, user)
             return redirect(reverse('account:dashboard_page'))
     return redirect('/')
-
-class LoginPage(View):
-    def get(self,request):
-        pass
-
 
 class RegistrationPage(View):
     def get(self, request):

@@ -138,7 +138,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'account.UserBase'
-LOGIN_REDIRECT_URL = reverse_lazy('account:login')
-LOGIN_URL = reverse_lazy("account:dashboard")
+LOGIN_REDIRECT_URL = reverse_lazy('account:dashboard_page')
+LOGIN_URL = reverse_lazy("account:login_page")
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
